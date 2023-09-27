@@ -37,6 +37,10 @@ extern string sjis_to_utf8(string src);
 extern string utf8_cstring_to_sjis(const char *src, size_t len);
 extern string utf8_to_sjis(string src);
 
+unsigned utf8_char_to_sjis(char *dst, const char *_src, const char **out);
+unsigned utf8_sjis_char_length(const char *_src, const char **out);
+size_t utf8_sjis_length(const char *src);
+
 extern bool sjis_char_is_valid(const char *src);
 extern int   sjis_index(const char *src, int index);
 extern char *sjis_char2unicode(const char *src, int *dst);

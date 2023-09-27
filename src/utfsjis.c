@@ -105,7 +105,7 @@ static string sjis_to_utf8_internal(const char *_src, size_t len) {
 		}
 	}
 	*dstp = '\0';
-	sdssetlen(dst, dstp - (uint8_t*)dst);
+	_string_set_length(dst, dstp - (uint8_t*)dst);
 	return dst;
 }
 
@@ -131,43 +131,73 @@ static int unicode_to_sjis(int u) {
 	return 0;
 }
 
-static string utf8_to_sjis_internal(const char *_src, size_t len) {
-	const uint8_t *src = (uint8_t*)_src;
-	string dst = string_new_len(NULL, len);
-	uint8_t* dstp = (uint8_t*)dst;
+unsigned utf8_char_to_sjis(char *dst, const char *_src, const char **out)
+{
+	const uint8_t *src = (const uint8_t*)_src;
 
+	// ASCII
+	if (*src <= 0x7f) {
+		*out = (const char*)src + 1;
+		*dst = *src;
+		return 1;
+	}
+
+	int u;
+	if (*src <= 0xdf) {
+		u = (src[0] & 0x1f) << 6 | (src[1] & 0x3f);
+		*out = (const char*)src + 2;
+	} else if (*src <= 0xef) {
+		u = (src[0] & 0xf) << 12 | (src[1] & 0x3f) << 6 | (src[2] & 0x3f);
+		*out = (const char*)src + 3;
+	} else {
+		do src++; while ((*src & 0xc0) == 0x80);
+		*out = (const char*)src;
+		*dst = '?';
+		return 1;
+	}
+
+	// hankaku
+	if (u > 0xff60 && u <= 0xff9f) {
+		*dst = u - 0xff60 + 0xa0;
+		return 1;
+	}
+	// zenkaku
+	int c = unicode_to_sjis(u);
+	if (c) {
+		dst[0] = c >> 8;
+		dst[1] = c & 0xff;
+		return 2;
+	}
+	// invalid
+	*dst = '?';
+	return 1;
+}
+
+unsigned utf8_sjis_char_length(const char *src, const char **out)
+{
+	char tmp[2];
+	return utf8_char_to_sjis(tmp, src, out);
+}
+
+// calculate the length of a UTF-8 string when encoded to SJIS
+size_t utf8_sjis_length(const char *src)
+{
+	size_t len = 0;
 	while (*src) {
-		if (*src <= 0x7f) {
-			*dstp++ = *src++;
-			continue;
-		}
+		len += utf8_sjis_char_length(src, &src);
+	}
+	return len;
+}
 
-		int u;
-		if (*src <= 0xdf) {
-			u = (src[0] & 0x1f) << 6 | (src[1] & 0x3f);
-			src += 2;
-		} else if (*src <= 0xef) {
-			u = (src[0] & 0xf) << 12 | (src[1] & 0x3f) << 6 | (src[2] & 0x3f);
-			src += 3;
-		} else {
-			*dstp++ = '?';
-			do src++; while ((*src & 0xc0) == 0x80);
-			continue;
-		}
-
-		if (u > 0xff60 && u <= 0xff9f) {
-			*dstp++ = u - 0xff60 + 0xa0;
-		} else {
-			int c = unicode_to_sjis(u);
-			if (c) {
-				*dstp++ = c >> 8;
-				*dstp++ = c & 0xff;
-			} else {
-				*dstp++ = '?';
-			}
-		}
+static string utf8_to_sjis_internal(const char *src, size_t len)
+{
+	string dst = string_new_len(NULL, len);
+	char *dstp = dst;
+	while (*src) {
+		dstp += utf8_char_to_sjis(dstp, src, &src);
 	}
 	*dstp = '\0';
+	_string_set_length(dst, dstp - dst);
 	return dst;
 }
 
