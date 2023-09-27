@@ -33,6 +33,10 @@ typedef sds string;
 #define string_length sdslen
 size_t string_length(const string s);
 
+// XXX: unsafe
+#define _string_set_length sdssetlen
+// void _string_set_length(string s, size_t newlen)
+
 /*
  * Create a new string with the content specified by the 'init' pointer
  * and 'initlen'.
