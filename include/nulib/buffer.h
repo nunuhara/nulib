@@ -48,6 +48,9 @@ void buffer_read_bytes(struct buffer *r, uint8_t *dst, size_t n) attr_nonnull;
 void buffer_skip(struct buffer *r, size_t off) attr_nonnull;
 bool buffer_check_bytes(struct buffer *r, const char *data, size_t n) attr_nonnull;
 
+/* Ensure at least `size` bytes are allocated at end of buffer. */
+void buffer_reserve(struct buffer *b, size_t size);
+
 void buffer_write_u32(struct buffer *b, uint32_t v) attr_nonnull;
 void buffer_write_u32_at(struct buffer *buf, size_t index, uint32_t v) attr_nonnull;
 void buffer_write_u16(struct buffer *b, uint16_t v) attr_nonnull;

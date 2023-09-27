@@ -122,7 +122,7 @@ bool buffer_check_bytes(struct buffer *r, const char *data, size_t n)
 	return eq;
 }
 
-static void alloc_buffer(struct buffer *b, size_t size)
+void buffer_reserve(struct buffer *b, size_t size)
 {
 	if (b->index + size < b->size)
 		return;
@@ -137,7 +137,7 @@ static void alloc_buffer(struct buffer *b, size_t size)
 
 void buffer_write_u32(struct buffer *b, uint32_t v)
 {
-	alloc_buffer(b, 4);
+	buffer_reserve(b, 4);
 	b->buf[b->index++] = (v & 0x000000FF);
 	b->buf[b->index++] = (v & 0x0000FF00) >> 8;
 	b->buf[b->index++] = (v & 0x00FF0000) >> 16;
@@ -154,14 +154,14 @@ void buffer_write_u32_at(struct buffer *buf, size_t index, uint32_t v)
 
 void buffer_write_u16(struct buffer *b, uint16_t v)
 {
-	alloc_buffer(b, 2);
+	buffer_reserve(b, 2);
 	b->buf[b->index++] = (v & 0x00FF);
 	b->buf[b->index++] = (v & 0xFF00) >> 8;
 }
 
 void buffer_write_u8(struct buffer *b, uint8_t v)
 {
-	alloc_buffer(b, 1);
+	buffer_reserve(b, 1);
 	b->buf[b->index++] = v;
 }
 
@@ -174,7 +174,7 @@ void buffer_write_float(struct buffer *b, float f)
 
 void buffer_write_bytes(struct buffer *b, const uint8_t *bytes, size_t len)
 {
-	alloc_buffer(b, len);
+	buffer_reserve(b, len);
 	memcpy(b->buf + b->index, bytes, len);
 	b->index += len;
 }
