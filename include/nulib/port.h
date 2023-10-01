@@ -100,6 +100,23 @@ void port_putc(struct port *port, char c);
 bool port_write_bytes(struct port *port, uint8_t *data, size_t size);
 
 /*
+ * Write a (little-endian) integer to a port.
+ */
+bool port_write_u8(struct port *port, uint8_t data);
+bool port_write_u16(struct port *port, uint16_t data);
+bool port_write_u32(struct port *port, uint32_t data);
+
+/*
+ * Get the current offset.
+ */
+off_t port_tell(struct port *port);
+
+/*
+ * Seek to a given offset.
+ */
+bool port_seek(struct port *port, long offset);
+
+/*
  * Get a port for the standart output stream. This port should not be closed.
  */
 struct port *port_stdout(void);

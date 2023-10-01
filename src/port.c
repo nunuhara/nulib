@@ -22,6 +22,7 @@
 #include "nulib/buffer.h"
 #include "nulib/file.h"
 #include "nulib/port.h"
+#include "nulib/little_endian.h"
 
 static struct port _port_stdout = {
 	.type = PORT_TYPE_FILE,
@@ -134,4 +135,39 @@ bool port_write_bytes(struct port *port, uint8_t *data, size_t size)
 		return fwrite(data, size, 1, port->file) == 1;
 	}
 	return false;
+}
+
+bool port_write_u8(struct port *port, uint8_t data)
+{
+	return port_write_bytes(port, &data, 1);
+}
+
+bool port_write_u16(struct port *port, uint16_t data)
+{
+	uint8_t b[2];
+	le_put16(b, 0, data);
+	return port_write_bytes(port, b, 2);
+}
+
+bool port_write_u32(struct port *port, uint32_t data)
+{
+	uint8_t b[4];
+	le_put32(b, 0, data);
+	return port_write_bytes(port, b, 4);
+}
+
+off_t port_tell(struct port *port)
+{
+	if (port->type == PORT_TYPE_BUFFER)
+		return port->buffer.index;
+	return ftell(port->file);
+}
+
+bool port_seek(struct port *port, long offset)
+{
+	if (port->type == PORT_TYPE_BUFFER)
+		buffer_seek(&port->buffer, offset);
+	else if (fseek(port->file, offset, SEEK_SET))
+		return false;
+	return true;
 }
