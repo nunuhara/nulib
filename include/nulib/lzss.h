@@ -26,4 +26,8 @@ uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 	attr_malloc
 	attr_nonnull;
 
+uint8_t *lzss_compress(uint8_t *input, size_t input_size, size_t *output_size)
+	attr_malloc
+	attr_nonnull;
+
 #endif // NULIB_LZSS_H

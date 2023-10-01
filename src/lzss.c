@@ -20,13 +20,13 @@
 #include "nulib/buffer.h"
 
 #define FRAME_SIZE 0x1000
+#define FRAME_MASK (FRAME_SIZE - 1)
 #define FRAME_INIT_POS 0xfee
 
 uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 {
 	uint8_t frame[FRAME_SIZE] = {0};
 	unsigned frame_pos = FRAME_INIT_POS;
-	unsigned frame_mask = FRAME_SIZE - 1;
 
 	struct buffer in;
 	buffer_init(&in, input, input_size);
@@ -41,7 +41,7 @@ uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 				if (buffer_remaining(&in) < 1)
 					break;
 				uint8_t b = buffer_read_u8(&in);;
-				frame[frame_pos++ & frame_mask] = b;
+				frame[frame_pos++ & FRAME_MASK] = b;
 				buffer_write_u8(&out, b);
 			} else {
 				if (buffer_remaining(&in) < 2)
@@ -50,13 +50,42 @@ uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 				uint8_t hi = buffer_read_u8(&in);
 				uint16_t offset = ((hi & 0xf0) << 4) | lo;
 				for (int count = 3 + (hi & 0xf); count != 0; --count) {
-					uint8_t v = frame[offset++ & frame_mask];
-					frame[frame_pos++ & frame_mask] = v;
+					uint8_t v = frame[offset++ & FRAME_MASK];
+					frame[frame_pos++ & FRAME_MASK] = v;
 					buffer_write_u8(&out, v);
 				}
 			}
 		}
 	}
+	*output_size = out.index;
+	return out.buf;
+}
+
+uint8_t *lzss_compress(uint8_t *input, size_t input_size, size_t *output_size)
+{
+	struct buffer in;
+	buffer_init(&in, input, input_size);
+
+	struct buffer out;
+	buffer_init(&out, NULL, 0);
+
+	// TODO: write a proper implementation that actually compresses the data
+	//       (this implementation inflates the size by 12.5%).
+	while (!buffer_end(&in)) {
+		// write control byte
+		int rem = buffer_remaining(&in);
+		if (rem < 8)
+			buffer_write_u8(&out, (1 << rem) - 1);
+		else
+			buffer_write_u8(&out, 0xff);
+
+		// write data
+		int count = min(rem, 8);
+		for (int i = 0; i < count; i++) {
+			buffer_write_u8(&out, buffer_read_u8(&in));
+		}
+	}
+
 	*output_size = out.index;
 	return out.buf;
 }
