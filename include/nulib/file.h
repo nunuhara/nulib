@@ -79,6 +79,11 @@ off_t file_size(const char *path)
 const char *file_extension(const char *path)
 	attr_nonnull;
 
+char *file_replace_extension(const char *file, const char *ext)
+	attr_malloc
+	attr_nonnull
+	attr_returns_nonnull;
+
 bool is_directory(const char *path)
 	attr_warn_unused_result
 	attr_nonnull;

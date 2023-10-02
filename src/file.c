@@ -350,6 +350,43 @@ const char *file_extension(const char *path)
 	return ext ? ext+1 : NULL;
 }
 
+/*
+ * file_replace_extension("filename", "ext") -> "filename.ext"
+ * file_replace_extension("filename.oth", "ext") -> "filename.ext"
+ * file_replace_extension("filename.ext.oth", "ext") -> "filename.ext"
+ */
+char *file_replace_extension(const char *file, const char *ext)
+{
+	size_t ext_len = strlen(ext);
+	size_t file_len = strlen(file);
+	const char *src_ext = strrchr(file, '.');
+
+	if (!src_ext) {
+		char *dst = xmalloc(file_len + ext_len + 2);
+		memcpy(dst, file, file_len);
+		dst[file_len] = '.';
+		memcpy(dst + file_len + 1, ext, ext_len + 1);
+		return dst;
+	}
+
+	size_t base_len = src_ext - file;
+	char *dst = xmalloc(base_len + ext_len + 2);
+	memcpy(dst, file, base_len);
+	dst[base_len] = '\0';
+
+	// handle the case where stripping the extension produces a file name
+	// with the correct extension
+	src_ext = strrchr(dst, '.');
+	if (src_ext && !strcasecmp(src_ext+1, ext)) {
+		dst[file_len] = '\0';
+		return dst;
+	}
+
+	dst[base_len] = '.';
+	memcpy(dst + base_len + 1, ext, ext_len + 1);
+	return dst;
+}
+
 bool is_directory(const char *path)
 {
 	ustat s;
