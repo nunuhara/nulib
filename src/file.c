@@ -34,6 +34,7 @@
 
 #include "nulib.h"
 #include "nulib/file.h"
+#include "nulib/string.h"
 
 #ifdef _WIN32
 static wchar_t *utf8_to_wchar(const char *str)
@@ -355,14 +356,14 @@ const char *file_extension(const char *path)
  * file_replace_extension("filename.oth", "ext") -> "filename.ext"
  * file_replace_extension("filename.ext.oth", "ext") -> "filename.ext"
  */
-char *file_replace_extension(const char *file, const char *ext)
+string file_replace_extension(const char *file, const char *ext)
 {
 	size_t ext_len = strlen(ext);
 	size_t file_len = strlen(file);
 	const char *src_ext = strrchr(file, '.');
 
 	if (!src_ext) {
-		char *dst = xmalloc(file_len + ext_len + 2);
+		string dst = string_new_len(NULL, file_len + ext_len + 2);
 		memcpy(dst, file, file_len);
 		dst[file_len] = '.';
 		memcpy(dst + file_len + 1, ext, ext_len + 1);
@@ -370,7 +371,7 @@ char *file_replace_extension(const char *file, const char *ext)
 	}
 
 	size_t base_len = src_ext - file;
-	char *dst = xmalloc(base_len + ext_len + 2);
+	string dst = string_new_len(NULL, base_len + ext_len + 2);
 	memcpy(dst, file, base_len);
 	dst[base_len] = '\0';
 

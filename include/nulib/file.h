@@ -24,6 +24,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "nulib.h"
+#include "nulib/string.h"
+
 #ifdef _WIN32
 typedef _WDIR UDIR;
 typedef struct _stat64 ustat;
@@ -79,7 +82,7 @@ off_t file_size(const char *path)
 const char *file_extension(const char *path)
 	attr_nonnull;
 
-char *file_replace_extension(const char *file, const char *ext)
+string file_replace_extension(const char *file, const char *ext)
 	attr_malloc
 	attr_nonnull
 	attr_returns_nonnull;
