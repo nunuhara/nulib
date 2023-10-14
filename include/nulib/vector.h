@@ -45,6 +45,7 @@ int main() {
 #define vector_destroy kv_destroy
 #define vector_a kv_a
 #define vector_A kv_A
+#define vector_set kv_set
 #define vector_pop kv_pop
 #define vector_length kv_size
 #define vector_empty(v) (vector_length(v) == 0)

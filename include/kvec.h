@@ -88,4 +88,10 @@ int main() {
 						  : (v).n <= (size_t)(i)? (v).n = (i) + 1 \
 						  : 0), (v).a[(i)])
 
+#define kv_set(type, v, i, val) (((v).m <= (size_t)(i)? \
+						  ((v).m = (v).n = (i) + 1, kv_roundup32((v).m), \
+						   (v).a = (type*)xrealloc((v).a, sizeof(type) * (v).m), 0) \
+						  : (v).n <= (size_t)(i)? (v).n = (i) + 1 \
+						  : 0), (v).a[(i)] = val)
+
 #endif
