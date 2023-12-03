@@ -47,7 +47,7 @@ static inline int16_t le_get16(const uint8_t *b, size_t i)
 
 static inline void le_put32(uint8_t *dst, int i, uint32_t dword)
 {
-	dst[i]   = (uint8_t)(dword);
+	dst[i+0] = (uint8_t)(dword);
 	dst[i+1] = (uint8_t)(dword >> 8);
 	dst[i+2] = (uint8_t)(dword >> 16);
 	dst[i+3] = (uint8_t)(dword >> 24);
@@ -55,8 +55,43 @@ static inline void le_put32(uint8_t *dst, int i, uint32_t dword)
 
 static inline void le_put16(uint8_t *dst, int i, uint16_t word)
 {
-	dst[i]   = word & 0xFF;
+	dst[i+0] = word & 0xFF;
 	dst[i+1] = word >> 8;
+}
+
+static inline int32_t be_get32(const uint8_t *b, size_t i)
+{
+	int c0, c1, c2, c3;
+	int d0, d1;
+	c3 = *(b + i  + 0);
+	c2 = *(b + i  + 1);
+	c1 = *(b + i  + 2);
+	c0 = *(b + i  + 3);
+	d0 = c0 + (c1 << 8);
+	d1 = c2 + (c3 << 8);
+	return d0 + (d1 << 16);
+}
+
+static inline int16_t be_get16(const uint8_t *b, size_t i)
+{
+	int c0, c1;
+	c1 = *(b + i + 0);
+	c0 = *(b + i + 1);
+	return c0 + (c1 << 8);
+}
+
+static inline void be_put32(uint8_t *dst, int i, uint32_t dword)
+{
+	dst[i+3] = (uint8_t)(dword);
+	dst[i+2] = (uint8_t)(dword >> 8);
+	dst[i+1] = (uint8_t)(dword >> 16);
+	dst[i+0] = (uint8_t)(dword >> 24);
+}
+
+static inline void be_put16(uint8_t *dst, int i, uint16_t word)
+{
+	dst[i+1] = word & 0xFF;
+	dst[i+0] = word >> 8;
 }
 
 #endif // NULIB_LITTLE_ENDIAN_H
