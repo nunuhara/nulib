@@ -24,7 +24,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static inline int32_t le_get32(const uint8_t *b, size_t i)
+static inline uint32_t le_get32(const uint8_t *b, size_t i)
 {
 	int c0, c1, c2, c3;
 	int d0, d1;
@@ -37,7 +37,7 @@ static inline int32_t le_get32(const uint8_t *b, size_t i)
 	return d0 + (d1 << 16);
 }
 
-static inline int16_t le_get16(const uint8_t *b, size_t i)
+static inline uint16_t le_get16(const uint8_t *b, size_t i)
 {
 	int c0, c1;
 	c0 = *(b + i + 0);
@@ -59,7 +59,7 @@ static inline void le_put16(uint8_t *dst, int i, uint16_t word)
 	dst[i+1] = word >> 8;
 }
 
-static inline int32_t be_get32(const uint8_t *b, size_t i)
+static inline uint32_t be_get32(const uint8_t *b, size_t i)
 {
 	int c0, c1, c2, c3;
 	int d0, d1;
@@ -72,7 +72,7 @@ static inline int32_t be_get32(const uint8_t *b, size_t i)
 	return d0 + (d1 << 16);
 }
 
-static inline int16_t be_get16(const uint8_t *b, size_t i)
+static inline uint16_t be_get16(const uint8_t *b, size_t i)
 {
 	int c0, c1;
 	c1 = *(b + i + 0);
