@@ -96,6 +96,7 @@ char *_xstrdup(const char *in, const char *func)
 	attr_dealloc_free
 	attr_returns_nonnull;
 
+#undef max
 #define max(a, b)				\
 	({					\
 		__typeof__ (a) _a = (a);	\
@@ -103,6 +104,7 @@ char *_xstrdup(const char *in, const char *func)
 		_a > _b ? _a : _b;		\
 	})
 
+#undef min
 #define min(a, b)				\
 	({					\
 		__typeof__ (a) _a = (a);	\

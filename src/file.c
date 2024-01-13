@@ -53,7 +53,7 @@ static char *wchar_to_utf8(const wchar_t *wstr)
 	return str;
 }
 
-static int make_dir(const char *path, possibly_unused int mode)
+static int make_dir(const char *path, int mode)
 {
 	wchar_t *wpath = utf8_to_wchar(path);
 	int r = _wmkdir(wpath);
