@@ -112,6 +112,8 @@ char *_xstrdup(const char *in, const char *func)
 		_a < _b ? _a : _b;		\
 	})
 
+#define clamp(min_value, max_value, value) min(max_value, max(min_value, value))
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(*(a)))
 
 #endif // NULIB_H
