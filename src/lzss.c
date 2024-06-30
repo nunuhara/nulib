@@ -23,7 +23,7 @@
 #define FRAME_MASK (FRAME_SIZE - 1)
 #define FRAME_INIT_POS 0xfee
 
-uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
+uint8_t *lzss_decompress_with_limit(uint8_t *input, size_t input_size, size_t *output_size)
 {
 	uint8_t frame[FRAME_SIZE] = {0};
 	unsigned frame_pos = FRAME_INIT_POS;
@@ -34,7 +34,13 @@ uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 	struct buffer out;
 	buffer_init(&out, NULL, 0);
 
+	size_t limit = *output_size;
+	if (!limit)
+		limit = 0xffffffff;
+
 	while (!buffer_end(&in)) {
+		if (out.index >= limit)
+			break;
 		uint8_t ctl = buffer_read_u8(&in);
 		for (unsigned bit = 1; bit != 0x100; bit <<= 1) {
 			if (ctl & bit) {
@@ -50,6 +56,8 @@ uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 				uint8_t hi = buffer_read_u8(&in);
 				uint16_t offset = ((hi & 0xf0) << 4) | lo;
 				for (int count = 3 + (hi & 0xf); count != 0; --count) {
+					if (out.index >= limit)
+						break;
 					uint8_t v = frame[offset++ & FRAME_MASK];
 					frame[frame_pos++ & FRAME_MASK] = v;
 					buffer_write_u8(&out, v);
@@ -59,6 +67,12 @@ uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
 	}
 	*output_size = out.index;
 	return out.buf;
+}
+
+uint8_t *lzss_decompress(uint8_t *input, size_t input_size, size_t *output_size)
+{
+	*output_size = 0;
+	return lzss_decompress_with_limit(input, input_size, output_size);
 }
 
 uint8_t *lzss_compress(uint8_t *input, size_t input_size, size_t *output_size)
