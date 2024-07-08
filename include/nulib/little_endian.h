@@ -23,6 +23,35 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+
+static inline uint32_t le_get32(const uint8_t *b, size_t i)
+{
+	int32_t t;
+	memcpy(&t, b + i, sizeof t);
+	return t;
+}
+
+static inline uint16_t le_get16(const uint8_t *b, size_t i)
+{
+	int16_t t;
+	memcpy(&t, b + i, sizeof t);
+	return t;
+}
+
+static inline void le_put32(uint8_t *dst, int i, uint32_t dword)
+{
+	memcpy(dst + i, &dword, sizeof dword);
+}
+
+static inline void le_put16(uint8_t *dst, int i, uint16_t word)
+{
+	memcpy(dst + i, &word, sizeof word);
+}
+
+#else
 
 static inline uint32_t le_get32(const uint8_t *b, size_t i)
 {
@@ -58,6 +87,8 @@ static inline void le_put16(uint8_t *dst, int i, uint16_t word)
 	dst[i+0] = word & 0xFF;
 	dst[i+1] = word >> 8;
 }
+
+#endif // __BYTE_ORDER__
 
 static inline uint32_t be_get32(const uint8_t *b, size_t i)
 {
