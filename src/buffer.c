@@ -28,55 +28,6 @@ void buffer_init(struct buffer *r, uint8_t *buf, size_t size)
 	r->index = 0;
 }
 
-uint8_t buffer_peek_u8(struct buffer *r)
-{
-	if (r->index + 1 > r->size)
-		ERROR("Out of bounds buffer read");
-	return r->buf[r->index];
-}
-
-uint8_t buffer_read_u8(struct buffer *r)
-{
-	uint8_t v = buffer_peek_u8(r);
-	r->index++;
-	return v;
-}
-
-uint16_t buffer_peek_u16(struct buffer *r)
-{
-	if (r->index + 2 > r->size)
-		ERROR("Out of bounds buffer read");
-	return le_get16(r->buf, r->index);
-}
-
-uint16_t buffer_read_u16(struct buffer *r)
-{
-	uint16_t v = buffer_peek_u16(r);
-	r->index += 2;
-	return v;
-}
-
-uint32_t buffer_peek_u32(struct buffer *r)
-{
-	if (r->index + 4 > r->size)
-		ERROR("Out of bounds buffer read");
-	return le_get32(r->buf, r->index);
-}
-
-uint32_t buffer_read_u32(struct buffer *r)
-{
-	uint32_t v = buffer_peek_u32(r);
-	r->index += 4;
-	return v;
-}
-
-float buffer_read_float(struct buffer *r)
-{
-	union { uint32_t i; float f; } v;
-	v.i = buffer_read_u32(r);
-	return v.f;
-}
-
 string buffer_read_string(struct buffer *r)
 {
 	int len = strlen(buffer_strdata(r));
@@ -122,54 +73,14 @@ bool buffer_check_bytes(struct buffer *r, const char *data, size_t n)
 	return eq;
 }
 
-void buffer_reserve(struct buffer *b, size_t size)
+void _buffer_reserve(struct buffer *b, size_t size)
 {
-	if (b->index + size < b->size)
-		return;
-
 	size_t new_size = b->index + size;
-	if (!b->size)
+	if (unlikely(!b->size))
 		b->size = 64;
 	while (b->size <= new_size)
 		b->size *= 2;
 	b->buf = xrealloc(b->buf, b->size);
-}
-
-void buffer_write_u32(struct buffer *b, uint32_t v)
-{
-	buffer_reserve(b, 4);
-	b->buf[b->index++] = (v & 0x000000FF);
-	b->buf[b->index++] = (v & 0x0000FF00) >> 8;
-	b->buf[b->index++] = (v & 0x00FF0000) >> 16;
-	b->buf[b->index++] = (v & 0xFF000000) >> 24;
-}
-
-void buffer_write_u32_at(struct buffer *buf, size_t index, uint32_t v)
-{
-	size_t tmp = buf->index;
-	buf->index = index;
-	buffer_write_u32(buf, v);
-	buf->index = tmp;
-}
-
-void buffer_write_u16(struct buffer *b, uint16_t v)
-{
-	buffer_reserve(b, 2);
-	b->buf[b->index++] = (v & 0x00FF);
-	b->buf[b->index++] = (v & 0xFF00) >> 8;
-}
-
-void buffer_write_u8(struct buffer *b, uint8_t v)
-{
-	buffer_reserve(b, 1);
-	b->buf[b->index++] = v;
-}
-
-void buffer_write_float(struct buffer *b, float f)
-{
-	union { float f; uint32_t u; } v;
-	v.f = f;
-	buffer_write_u32(b, v.u);
 }
 
 void buffer_write_bytes(struct buffer *b, const uint8_t *bytes, size_t len)

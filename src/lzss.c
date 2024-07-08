@@ -32,35 +32,38 @@ uint8_t *lzss_decompress_with_limit(uint8_t *input, size_t input_size, size_t *o
 	buffer_init(&in, input, input_size);
 
 	struct buffer out;
-	buffer_init(&out, NULL, 0);
-
 	size_t limit = *output_size;
-	if (!limit)
+	if (!limit) {
+		buffer_init(&out, NULL, 0);
 		limit = 0xffffffff;
+	} else {
+		buffer_init(&out, xmalloc(limit), limit);
+	}
 
 	while (!buffer_end(&in)) {
-		if (out.index >= limit)
+		if (unlikely(out.index >= limit))
 			break;
-		uint8_t ctl = buffer_read_u8(&in);
+		buffer_reserve(&out, 18 * 8);
+		uint8_t ctl = buffer_read_u8_uc(&in);
 		for (unsigned bit = 1; bit != 0x100; bit <<= 1) {
 			if (ctl & bit) {
-				if (buffer_remaining(&in) < 1)
+				if (unlikely(buffer_remaining(&in) < 1))
 					break;
-				uint8_t b = buffer_read_u8(&in);;
+				uint8_t b = buffer_read_u8_uc(&in);;
 				frame[frame_pos++ & FRAME_MASK] = b;
-				buffer_write_u8(&out, b);
+				buffer_write_u8_uc(&out, b);
 			} else {
-				if (buffer_remaining(&in) < 2)
+				if (unlikely(buffer_remaining(&in) < 2))
 					break;
-				uint8_t lo = buffer_read_u8(&in);
-				uint8_t hi = buffer_read_u8(&in);
+				uint8_t lo = buffer_read_u8_uc(&in);
+				uint8_t hi = buffer_read_u8_uc(&in);
 				uint16_t offset = ((hi & 0xf0) << 4) | lo;
 				for (int count = 3 + (hi & 0xf); count != 0; --count) {
-					if (out.index >= limit)
+					if (unlikely(out.index >= limit))
 						break;
 					uint8_t v = frame[offset++ & FRAME_MASK];
 					frame[frame_pos++ & FRAME_MASK] = v;
-					buffer_write_u8(&out, v);
+					buffer_write_u8_uc(&out, v);
 				}
 			}
 		}
