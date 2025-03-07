@@ -7,7 +7,6 @@ nulib_sources = [
   'src/command.c',
   'src/file.c',
   'src/hashset.c',
-  'src/lzss.c',
   'src/port.c',
   'src/sds.c',
   'src/system.c',
