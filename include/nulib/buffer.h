@@ -239,4 +239,52 @@ static inline void buffer_align(struct buffer *r, int p)
 	r->index = (r->index + (p-1)) & ~(p-1);
 }
 
+struct bitbuffer {
+	uint8_t *buf;
+	size_t buf_size;
+	int index;
+	int current;
+	int mask;
+};
+
+static inline void bitbuffer_init(struct bitbuffer *buf, uint8_t *data, size_t data_size)
+{
+	buf->buf = data;
+	buf->buf_size = data_size;
+	buf->index = 0;
+	buf->current = 0;
+	buf->mask = 0;
+}
+
+static inline bool bitbuffer_read_bit(struct bitbuffer *b)
+{
+	if (b->mask == 0) {
+		if (b->index >= b->buf_size)
+			ERROR("bitbuffer overflowed");
+		b->current = b->buf[b->index++];
+		b->mask = 0x80;
+	}
+	bool bit = b->current & b->mask;
+	b->mask >>= 1;
+	return !!bit;
+}
+
+static inline unsigned bitbuffer_read_number(struct bitbuffer *b, int nr_bits)
+{
+	unsigned r = 0;
+	for (int i = 0; i < nr_bits; i++) {
+		r = (r << 1) | bitbuffer_read_bit(b);
+	}
+	return r;
+}
+
+static inline unsigned bitbuffer_read_zeros(struct bitbuffer *b, int limit)
+{
+	unsigned zeros = 0;
+	for (int i = 0; i < limit && !bitbuffer_read_bit(b); i++) {
+		zeros++;
+	}
+	return zeros;
+}
+
 #endif // NULIB_BUFFER_H
