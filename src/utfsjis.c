@@ -89,7 +89,7 @@ static string sjis_to_utf8_internal(const char *_src, size_t len) {
 	string dst = string_new_len(NULL, len * 3);
 	uint8_t* dstp = (uint8_t*)dst;
 
-	while (*src) {
+	while (*src && (src - (uint8_t*)_src < len)) {
 		int c;
 		src = (uint8_t*)sjis_char2unicode((const char*)src, &c);
 
@@ -191,9 +191,10 @@ size_t utf8_sjis_length(const char *src)
 
 static string utf8_to_sjis_internal(const char *src, size_t len)
 {
+	const char *_src = src;
 	string dst = string_new_len(NULL, len);
 	char *dstp = dst;
-	while (*src) {
+	while (*src && (src - _src < len)) {
 		dstp += utf8_char_to_sjis(dstp, src, &src);
 	}
 	*dstp = '\0';
